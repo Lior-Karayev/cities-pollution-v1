@@ -28,6 +28,7 @@ The project is organized into the following packages:
     * ```CsvDataReader.java```: A utility class responsible for all file I/O.
         * It provides a static method ```getCsvFileLines()``` to read the entire CSV file.
         * The constructor is private to prevent instantiation, as it's a static utility class.
+* **data.csv**: CSV file containing air pollution and water quality in cities around the world.
 
 ## 🚀 Future Goals
 
