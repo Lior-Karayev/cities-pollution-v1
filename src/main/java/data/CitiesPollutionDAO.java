@@ -1,7 +1,13 @@
 package data;
 
+import java.util.ArrayList;
+
 public class CitiesPollutionDAO {
-    /*
-    Implement SQL logic here
-     */
+
+
+
+//    public ArrayList<String> getAllRecords(){
+//        String sql = "select * from cities_pollution";
+//
+//    }
 }

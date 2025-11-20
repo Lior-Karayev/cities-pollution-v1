@@ -1,15 +1,13 @@
 package app;
 
-import data.CsvDataReader;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import data.MySQLPollutionDAO;
+import model.PollutionReportModel;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println(CsvDataReader.getCsvFileLines("data.csv"));
+        MySQLPollutionDAO sqlAction = new MySQLPollutionDAO();
+        for(PollutionReportModel rep: sqlAction.getMaxPollutionCountry()){
+            System.out.println(rep);
+        }
     }
 }
