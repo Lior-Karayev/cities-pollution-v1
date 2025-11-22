@@ -5,8 +5,8 @@ import model.PollutionReportModel;
 import java.util.List;
 
 public interface IPollutionDAO {
-    List<PollutionReportModel> getMaxPollutionCountry();
-    List<PollutionReportModel> getMinPollutionCountry();
+    List<PollutionReportModel> getMaxPollutionCountries();
+    List<PollutionReportModel> getMinPollutionCountries();
 
     List<PollutionReportModel> getMaxPollutionRegion();
     List<PollutionReportModel> getMinPollutionRegion();
