@@ -12,7 +12,7 @@ import java.util.List;
 public class MySQLPollutionDAO implements IPollutionDAO {
 
     @Override
-    public List<PollutionReportModel> getMaxPollutionCountries() {
+    public List<PollutionReportModel> getMaxPollutionReports() {
         String sql = "(SELECT * FROM cities_pollution " +
                 "WHERE `\"AirQuality\"` = " +
                 "(SELECT MIN(`\"AirQuality\"`) FROM cities_pollution))" +
@@ -44,7 +44,7 @@ public class MySQLPollutionDAO implements IPollutionDAO {
     }
 
     @Override
-    public List<PollutionReportModel> getMinPollutionCountries() {
+    public List<PollutionReportModel> getMinPollutionReports() {
         List<PollutionReportModel> pollutionReports = new ArrayList<>();
 
         String sql = String.format(
@@ -77,18 +77,26 @@ public class MySQLPollutionDAO implements IPollutionDAO {
     }
 
     @Override
-    public List<PollutionReportModel> getMaxPollutionRegion() {
-        return List.of();
-    }
+    public List<String> getCityByAirRange(double min, double max) {
+        String sql = "SELECT City FROM cities_pollution " +
+                "WHERE `\"AirQuality\"` >= ? " +
+                "AND `\"AirQuality\"` <= ?";
 
-    @Override
-    public List<PollutionReportModel> getMinPollutionRegion() {
-        return List.of();
-    }
+        List<String> reports = new ArrayList<>();
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setDouble(1, min);
+            statement.setDouble(2, max);
 
-    @Override
-    public List<PollutionReportModel> getReportByRange(float min, float max) {
-        return List.of();
+            ResultSet rs = statement.executeQuery();
+            while(rs.next()) {
+                reports.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reports;
     }
 
     @Override

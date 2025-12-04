@@ -20,4 +20,14 @@ public class CsvDataReader {
             return new ArrayList<>();
         }
     }
+
+    public static List<String> getMaxPollutionCities(String path){
+        // Get the countries with minimal air quality or maximum water pollution
+        return new ArrayList<>();
+    }
+
+    public static List<String> getMinPollutionCities(String path){
+        // Get the countries with maximum air quality or minimal water pollution
+        return new ArrayList<>();
+    }
 }
