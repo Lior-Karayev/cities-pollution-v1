@@ -1,9 +1,11 @@
 package logic;
 
+import data.CsvDataReader;
 import data.DatabaseConnector;
 import data.MySQLPollutionDAO;
 import model.PollutionReportModel;
 
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,6 +19,26 @@ public class PollutionManager {
 
     public PollutionManager() {
         this.dao = new MySQLPollutionDAO();
+    }
+
+    public List<String> getCSVMaxWaterPollutionCities() throws FileNotFoundException {
+        CsvDataReader csv = new CsvDataReader("data.csv");
+        return csv.getMaxWaterPollution();
+    }
+
+    public List<String> getCSVMinWaterPollutionCities() throws FileNotFoundException {
+        CsvDataReader csv = new CsvDataReader("data.csv");
+        return csv.getMinWaterPollution();
+    }
+
+    public List<String> getCSVMaxAirPollutionCities() throws FileNotFoundException {
+        CsvDataReader csv = new CsvDataReader("data.csv");
+        return csv.getMaxAirPollution();
+    }
+
+    public List<String> getCSVMinAirPollutionCities() throws FileNotFoundException {
+        CsvDataReader csv = new CsvDataReader("data.csv");
+        return csv.getMinAirPollution();
     }
 
     public Set<String> getMaxPollutionCountries() {
