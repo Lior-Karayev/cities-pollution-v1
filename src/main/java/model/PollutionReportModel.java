@@ -5,14 +5,14 @@ public class PollutionReportModel {
     private final String city;
     private final String region;
     private final double airQuality;
-    private final double waterQuality;
+    private final double waterPollution;
 
-    public PollutionReportModel(String country, String city, String region, double airQuality, double waterQuality) {
+    public PollutionReportModel(String country, String city, String region, double airQuality, double waterPollution) {
         this.country = country;
         this.city = city;
         this.region = region;
         this.airQuality = airQuality;
-        this.waterQuality = waterQuality;
+        this.waterPollution = waterPollution;
     }
 
     public String getCountry() {
@@ -32,12 +32,12 @@ public class PollutionReportModel {
     }
 
     public double getWaterQuality() {
-        return waterQuality;
+        return waterPollution;
     }
 
     @Override
     public String toString() {
         return String.format("Country: %s | Region: %s | City: %s | Air Quality: %.2f | Water Quality: %.2f",
-                country, region, city, airQuality, waterQuality);
+                country, region, city, airQuality, waterPollution);
     }
 }
