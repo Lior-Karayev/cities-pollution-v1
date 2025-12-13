@@ -1,46 +1,65 @@
-# 🏙️ Cities Pollution (V1)
-Welcome to the **Cities Pollution** project! This is a Java application for a "Systems Programming" course, designed to analyze data on air pollution and water quality in cities around the world.
+# Cities Pollution Analysis System
 
-## 🎯 Project Goal
+A Java-based Systems Programming project designed to analyze global air and water pollution data.
 
-The ultimate goal of this application is to read, process, and display pollution data from a MySQL database. This will allow for complex queries and analysis.
+This project implements a **hybrid data analysis architecture**, capable of processing data from two sources:
+1.  **CSV Analysis (Active):** Uses Java NIO and Streams to parse and aggregate data directly from raw files.
+2.  **Database Analysis (Ready):** A fully implemented DAO layer using JDBC and MySQL for advanced querying (prepared for future integration).
 
-## 📈 Current Status
+## 🚀 Features
 
-This is the very first version of the project. The current functionality is focused on the initial data-handling phase: reading the data directly from a CSV file.
+* **Data Parsing:** Efficiently reads and processes `data.csv` using `java.nio`.
+* **Aggregation Logic:** Algorithms to identify cities with **Maximum** and **Minimum** pollution levels for both Air and Water categories.
+* **Layered Architecture:** Follows a strict **MVC-based design** (Model, Data, Logic, View) to ensure separation of concerns.
+* **Scalability:** Includes a complete SQL data access layer (`MySQLPollutionDAO`) capable of complex `UNION` queries.
 
-### The application currently:
+## 📂 Project Structure
 
-Boots up from a Main class.
+The project is organized into strictly separated packages:
 
-Utilizes a utility class to read all lines from a CSV file into a ```List<String>.```
+### `app`
+* **`Main`**: The entry point. Currently configured to execute **CSV-based analysis** and print the results to the console.
 
-## 📦 Project Structure
+### `data` (Persistence Layer)
+* **`CsvDataReader`**: **(Core for Assignment 1)** Handles file I/O, parsing CSV lines, and calculating min/max pollution metrics using efficient loops and string splitting.
+* **`MySQLPollutionDAO`**: Implements `IPollutionDAO` using JDBC. Handles complex SQL queries and secure database connections.
+* **`DatabaseConnector`**: Manages DB credentials via a secure `config.properties` file.
 
-The project is organized into the following packages:
+### `logic` (Service Layer)
+* **`PollutionManager`**: The bridge between the raw data and the application. It validates input and routes requests to either the CSV reader or the SQL DAO.
 
-* ```com.pollution.app```
+### `model`
+* **`PollutionReportModel`**: An immutable Data Transfer Object (DTO) representing a single pollution record.
 
-  * ```Main.java```: The main entry point for the application. It coordinates the data reading and will eventually orchestrate the database interactions.
+---
 
-* ```com.pollution.data```
+## 🛠️ Setup & Usage
 
-    * ```CsvDataReader.java```: A utility class responsible for all file I/O.
-        * It provides a static method ```getCsvFileLines()``` to read the entire CSV file.
-        * The constructor is private to prevent instantiation, as it's a static utility class.
-* **data.csv**: CSV file containing air pollution and water quality in cities around the world.
+### 1. Prerequisites
+* Java JDK 21
+* Maven
 
-## 🚀 Future Goals
+### 2. Running the Analysis (CSV Mode)
+The application is currently set to **CSV Mode** by default.
 
-### The next major steps in this project are:
-1. **Parse Data**: Add logic to parse the List<String> into meaningful Java objects (e.g., PollutionRecord).
-2. **Database Integration**: Connect the application to a MySQL database.
-3. **Analysis**: Build features to query and analyze the data from the database.
+1.  Ensure the file `data.csv` is present in the **root directory** of the project.
+2.  Run the `main` method in `app.Main`.
+3.  The application will output:
+    * Cities with Max/Min Water Pollution.
+    * Cities with Max/Min Air Pollution.
 
-## ⚙️ Getting Started
+### 3. Advanced Setup (SQL Mode - Optional)
+The project contains a fully functional Database layer. To enable it:
 
-### To run the project:
-1. Clone the repository.
-2. Ensure you have Java 21 (or as specified in pom.xml) installed.
-3. Open the project in your favorite IDE (like IntelliJ).
-4. Run the Main class located in com.pollution.app.
+1.  **Database Creation:** Run the included `database_setup.sql` script to create the `cities_pollution_db` and the table schema (with quoted identifiers).
+2.  **Import Data:** Import `data.csv` into the `cities_pollution` table using your SQL IDE (ensure headers map to `City`, `"Region"`, `"Country"`, etc.).
+3.  **Configuration:** Rename `config.properties.example` to `config.properties` and add your MySQL credentials.
+4.  **Enable Code:** Uncomment the SQL methods in `app.Main`.
+
+---
+
+## 🛡️ Design Choices
+
+* **Exception Handling:** The CSV reader handles `FileNotFoundException` gracefully, logging errors without crashing the main thread.
+* **Security:** Database credentials are never hardcoded; they are loaded from an external file ignored by Git.
+* **Interface Segregation:** `IPollutionDAO` defines a contract, allowing the app to switch between data sources (Mock, SQL, File) easily.
