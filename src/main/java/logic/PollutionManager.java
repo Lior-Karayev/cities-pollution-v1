@@ -3,6 +3,7 @@ package logic;
 import data.CsvDataReader;
 import data.DatabaseConnector;
 import data.MySQLPollutionDAO;
+import model.Pollution;
 import model.PollutionReportModel;
 
 import java.io.FileNotFoundException;
@@ -42,19 +43,19 @@ public class PollutionManager {
     }
 
     public Set<String> getMaxPollutionCountries() {
-        return dao.getMaxPollutionReports().stream().map(PollutionReportModel::getCountry).collect(Collectors.toSet());
+        return dao.getMaxPollutionReports().stream().map(Pollution::getCountry).collect(Collectors.toSet());
     }
 
     public Set<String> getMinPollutionCountries() {
-        return dao.getMinPollutionReports().stream().map(PollutionReportModel::getCountry).collect(Collectors.toSet());
+        return dao.getMinPollutionReports().stream().map(Pollution::getCountry).collect(Collectors.toSet());
     }
 
     public Set<String> getMaxPollutionRegions() {
-        return dao.getMaxPollutionReports().stream().map(PollutionReportModel::getRegion).collect(Collectors.toSet());
+        return dao.getMaxPollutionReports().stream().map(Pollution::getRegion).collect(Collectors.toSet());
     }
 
     public Set<String> getMinPollutionRegion() {
-        return dao.getMinPollutionReports().stream().map(PollutionReportModel::getRegion).collect(Collectors.toSet());
+        return dao.getMinPollutionReports().stream().map(Pollution::getRegion).collect(Collectors.toSet());
     }
 
     public Set<String> getCitiesByAirRange(double min, double max) throws RuntimeException {

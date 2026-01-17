@@ -1,6 +1,9 @@
 package data;
 
+import model.AirPollution;
+import model.Pollution;
 import model.PollutionReportModel;
+import model.WaterPollution;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,28 +15,43 @@ import java.util.List;
 public class MySQLPollutionDAO implements IPollutionDAO {
 
     @Override
-    public List<PollutionReportModel> getMaxPollutionReports() {
-        String sql = "(SELECT * FROM cities_pollution " +
+    public List<Pollution> getMaxPollutionReports() {
+        String sql = "(SELECT *, 'AIR_TYPE' as result_type FROM cities_pollution " +
                 "WHERE `\"AirQuality\"` = " +
                 "(SELECT MIN(`\"AirQuality\"`) FROM cities_pollution))" +
-                "UNION (SELECT * FROM cities_pollution " +
+                "UNION (SELECT *, 'WATER_TYPE' as result_type FROM cities_pollution " +
                 "WHERE `\"WaterPollution\"` = " +
                 "(SELECT MAX(`\"WaterPollution\"`) FROM cities_pollution))";
 
-        List<PollutionReportModel> pollutionReports = new ArrayList<>();
+        List<Pollution> pollutionReports = new ArrayList<>();
 
         try (Connection connection = DatabaseConnector.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
 
             while(rs.next()) {
-                pollutionReports.add(new PollutionReportModel(
-                        rs.getString("\"Country\""),
-                        rs.getString("\"Region\""),
-                        rs.getString("City"),
-                        rs.getDouble("\"AirQuality\""),
-                        rs.getDouble("\"WaterPollution\"")
-                ));
+                String type = rs.getString("result_type");
+                String country = rs.getString("\"Country\"");
+                String region = rs.getString("\"Region\"");
+                String city = rs.getString("City");
+
+                if("AIR_TYPE".equals(type)) {
+                    double val = rs.getDouble("\"AirQuality\"");
+                    pollutionReports.add(new AirPollution(
+                            country,
+                            city,
+                            region,
+                            val
+                    ));
+                } else if("WATER_TYPE".equals(type)) {
+                    double val = rs.getDouble("\"WaterPollution\"");
+                    pollutionReports.add(new WaterPollution(
+                            country,
+                            city,
+                            region,
+                            val
+                    ));
+                }
             }
 
         } catch (SQLException e) {
@@ -44,14 +62,14 @@ public class MySQLPollutionDAO implements IPollutionDAO {
     }
 
     @Override
-    public List<PollutionReportModel> getMinPollutionReports() {
-        List<PollutionReportModel> pollutionReports = new ArrayList<>();
+    public List<Pollution> getMinPollutionReports() {
+        List<Pollution> pollutionReports = new ArrayList<>();
 
         String sql = String.format(
-                "(SELECT * FROM cities_pollution " +
+                "(SELECT *, 'AIR_TYPE' as result_type FROM cities_pollution " +
                         "WHERE `\"AirQuality\"` = " +
                         "(SELECT MAX(`\"AirQuality\"`) from cities_pollution)) " +
-                        "UNION (SELECT * FROM cities_pollution " +
+                        "UNION (SELECT *, 'WATER_TYPE' as result_type FROM cities_pollution " +
                         "WHERE `\"WaterPollution\"` = " +
                         "(SELECT MIN(`\"WaterPollution\"`) FROM cities_pollution))"
         );
@@ -61,13 +79,28 @@ public class MySQLPollutionDAO implements IPollutionDAO {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                pollutionReports.add(new PollutionReportModel(
-                        rs.getString("\"Country\""),
-                        rs.getString("\"Region\""),
-                        rs.getString("City"),
-                        rs.getDouble("\"AirQuality\""),
-                        rs.getDouble("\"WaterPollution\"")
-                ));
+                String type = rs.getString("result_type");
+                String country = rs.getString("\"Country\"");
+                String region = rs.getString("\"Region\"");
+                String city = rs.getString("City");
+
+                if("AIR_TYPE".equals(type)){
+                    double val = rs.getDouble("\"AirQuality\"");
+                    pollutionReports.add(new AirPollution(
+                            country,
+                            city,
+                            region,
+                            val
+                    ));
+                } else if("WATER_TYPE".equals(type)){
+                    double val = rs.getDouble("\"WaterPollution\"");
+                    pollutionReports.add(new WaterPollution(
+                            country,
+                            city,
+                            region,
+                            val
+                    ));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
