@@ -31,7 +31,7 @@ public class PollutionReportModel {
         return airQuality;
     }
 
-    public double getWaterQuality() {
+    public double getWaterPollution() {
         return waterPollution;
     }
 

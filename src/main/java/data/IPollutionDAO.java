@@ -1,14 +1,16 @@
 package data;
 
-import model.Pollution;
+import model.PollutionFilter;
 import model.PollutionReportModel;
 
 import java.util.List;
 
 public interface IPollutionDAO {
-    List<Pollution> getMaxPollutionReports();
-    List<Pollution> getMinPollutionReports();
+    List<PollutionReportModel> getMaxAirQuality();
+    List<PollutionReportModel> getMaxWaterPollution();
+    List<PollutionReportModel> getAllReports();
 
-    List<String> getCityByAirRange(double min, double max);
-    int getReportByRangeCount(float min, float max);
+    List<PollutionReportModel> findReports(PollutionFilter filter);
+
+    List<String> findDistinctCities(String partialName, int limit);
 }

@@ -8,8 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import logic.DashboardData;
-import model.AirPollution;
-import model.Pollution;
+import logic.StatisticsAggregator;
+import model.PollutionReportModel;
 
 import java.util.Comparator;
 import java.util.List;
@@ -25,39 +25,45 @@ public class DashboardController {
     @FXML private StackPane chartContainer;
 
     private DashboardData currentData;
+    private List<PollutionReportModel> defaultMaxAir;
+    private List<PollutionReportModel> defaultMaxWater;
 
     @FXML
     public void initialize() {
         viewSelector.setItems(FXCollections.observableArrayList(
-                "Correlation (Scatter)",
-                "Top 10 Worst Air Quality (Bar)"
+                "Show Cities",
+                "Show Country Averages",
+                "Show Region Averages"
         ));
 
-        viewSelector.setValue("Correlation (Scatter)");
+        viewSelector.setValue("Show Cities");
 
         viewSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            updateChartDisplay(newVal);
+            updateDashboardState(newVal);
         });
     }
 
-    public void updateData(DashboardData data, List<Pollution> maxAir, List<Pollution> maxWater) {
+    public void updateData(DashboardData data, List<PollutionReportModel> maxAir, List<PollutionReportModel> maxWater) {
         this.currentData = data;
+        this.defaultMaxAir = maxAir;
+        this.defaultMaxWater = maxWater;
+
         updateScorecards(maxAir, maxWater);
-        updateChartDisplay(viewSelector.getValue());
+        updateDashboardState(viewSelector.getValue());
     }
 
-    public void updateScorecards(List<Pollution> maxAirList, List<Pollution> maxWaterList) {
+    public void updateScorecards(List<PollutionReportModel> maxAirList, List<PollutionReportModel> maxWaterList) {
         if(maxAirList != null && !maxAirList.isEmpty()) {
-            Pollution first = maxAirList.getFirst();
-            lblMaxAirValue.setText(String.format("%.2f", first.getValue()));
+            PollutionReportModel first = maxAirList.getFirst();
+            lblMaxAirValue.setText(String.format("%.2f", first.getAirQuality()));
+
+            String displayName = getDisplayName(first);
 
             if(maxAirList.size() > 1) {
-                lblMaxAirCity.setText(first.getCity() + " (+" + (maxAirList.size() - 1) + ")");
-
-                String allNames = maxAirList.stream().map(Pollution::getCity).collect(Collectors.joining("\n"));
+                lblMaxAirCity.setText(displayName + " (+" + (maxAirList.size() - 1) + ")");
                 lblMaxAirCity.setTooltip(new Tooltip(generateLimitedList(maxAirList)));
             } else {
-                lblMaxAirCity.setText(first.getCity());
+                lblMaxAirCity.setText(displayName);
                 lblMaxAirCity.setTooltip(null);
             }
         } else {
@@ -65,16 +71,17 @@ public class DashboardController {
             lblMaxAirValue.setText("-");
         }
 
-        if(maxWaterList != null) {
-            Pollution first = maxWaterList.getFirst();
-            lblMaxWaterValue.setText(String.format("%.2f", first.getValue()));
+        if(maxWaterList != null && !maxWaterList.isEmpty()) {
+            PollutionReportModel first = maxWaterList.getFirst();
+            lblMaxWaterValue.setText(String.format("%.2f", first.getWaterPollution()));
+
+            String displayName = getDisplayName(first);
 
             if(maxWaterList.size() > 1) {
-                lblMaxWaterCity.setText(first.getCity() + " (+" + (maxWaterList.size() - 1) + ")");
-                String allNames = maxWaterList.stream().map(Pollution::getCity).collect(Collectors.joining("\n"));
+                lblMaxWaterCity.setText(displayName + " (+" + (maxWaterList.size() - 1) + ")");
                 lblMaxWaterCity.setTooltip(new Tooltip(generateLimitedList(maxWaterList)));
             } else {
-                lblMaxWaterCity.setText(first.getCity());
+                lblMaxWaterCity.setText(displayName);
                 lblMaxWaterCity.setTooltip(null);
             }
         } else {
@@ -83,12 +90,36 @@ public class DashboardController {
         }
     }
 
-    private String generateLimitedList(List<Pollution> list) {
+    private List<PollutionReportModel> findMaxAirInList(List<PollutionReportModel> list) {
+        if(list == null || list.isEmpty()) return List.of();
+
+        double maxAir = list.stream().mapToDouble(PollutionReportModel::getAirQuality).max().orElse(0.0);
+        return list.stream().filter(p -> p.getAirQuality() == maxAir).toList();
+    }
+
+    private List<PollutionReportModel> findMaxWaterInList(List<PollutionReportModel> list) {
+        if(list == null || list.isEmpty()) return List.of();
+
+        double maxWater = list.stream().mapToDouble(PollutionReportModel::getWaterPollution).max().orElse(0.0);
+        return list.stream().filter(p -> p.getWaterPollution() == maxWater).toList();
+    }
+
+    private String getDisplayName(PollutionReportModel p) {
+        if("Country Average".equals(p.getCity())) {
+            return p.getCountry();
+        } else if("Region Average".equals(p.getCity())) {
+            return p.getRegion() + ", " + p.getCountry();
+        }
+
+        return p.getCity() + ", " + p.getCountry();
+    }
+
+    private String generateLimitedList(List<PollutionReportModel> list) {
         int limit = 15;
 
         String text = list.stream()
                 .limit(limit)
-                .map(Pollution::getCity)
+                .map(this::getDisplayName)
                 .collect(Collectors.joining("\n"));
 
         if(list.size() > limit) {
@@ -98,19 +129,36 @@ public class DashboardController {
         return text;
     }
 
-    private void updateChartDisplay(String mode) {
+    private void updateDashboardState(String mode) {
         if(currentData == null) return;
 
-        chartContainer.getChildren().clear();
+        List<PollutionReportModel> dataToDisplay;
+        List<PollutionReportModel> maxAirToDisplay;
+        List<PollutionReportModel> maxWaterToDisplay;
 
-        if("Correlation (Scatter)".equals(mode)){
-            chartContainer.getChildren().add(buildScatterChart());
-        } else if("Top 10 Worst Air Quality (Bar)".equals(mode)){
-            chartContainer.getChildren().add(buildBarChart());
+        if("Show Country Averages".equals(mode)) {
+            dataToDisplay = StatisticsAggregator.getCountryAverage(currentData.getPollutionList());
+
+            maxAirToDisplay = findMaxAirInList(dataToDisplay);
+            maxWaterToDisplay = findMaxWaterInList(dataToDisplay);
+        } else if("Show Region Averages".equals(mode)) {
+            dataToDisplay = StatisticsAggregator.getRegionAverages(currentData.getPollutionList());
+            maxAirToDisplay = findMaxAirInList(dataToDisplay);
+            maxWaterToDisplay = findMaxWaterInList(dataToDisplay);
+        } else {
+            dataToDisplay = currentData.getPollutionList();
+
+            maxAirToDisplay = this.defaultMaxAir;
+            maxWaterToDisplay = this.defaultMaxWater;
         }
+
+        chartContainer.getChildren().clear();
+        chartContainer.getChildren().add(buildScatterChart(dataToDisplay));
+
+        updateScorecards(maxAirToDisplay, maxWaterToDisplay);
     }
 
-    private ScatterChart<Number, Number> buildScatterChart() {
+    private ScatterChart<Number, Number> buildScatterChart(List<PollutionReportModel> dataList) {
         NumberAxis xAxis = new NumberAxis();
         xAxis.setLabel("Air Quality");
 
@@ -122,9 +170,14 @@ public class DashboardController {
         sc.setAnimated(false);
 
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        series.setName("Cities");
+        series.setName("Data Points");
 
-        series.getData().addAll(currentData.getChartData());
+        for(PollutionReportModel p: dataList) {
+            XYChart.Data<Number, Number> point = new XYChart.Data<>(p.getAirQuality(), p.getWaterPollution());
+            point.setExtraValue(p.getCountry() + " - " + p.getCity());
+            series.getData().add(point);
+        }
+
         sc.getData().add(series);
 
         for(XYChart.Data<Number, Number> data : series.getData()) {
@@ -135,35 +188,5 @@ public class DashboardController {
         }
 
         return sc;
-    }
-
-    private BarChart<String, Number> buildBarChart() {
-        CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel("City");
-
-        NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel("Air Pollution Score");
-
-        // Create Chart
-        BarChart<String, Number> bc = new BarChart<>(xAxis, yAxis);
-        bc.setLegendVisible(false);
-        bc.setAnimated(true);
-
-        // Prepare Data: Sort by Air Quality Descending and take Top 10
-        List<Pollution> top10 = currentData.getPollutionList().stream()
-                .filter(p -> p instanceof AirPollution)
-                .sorted(Comparator.comparingDouble(Pollution::getValue).reversed())
-                .limit(10)
-                .toList();
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Pollution");
-
-        for (Pollution p : top10) {
-            series.getData().add(new XYChart.Data<>(p.getCity(), p.getValue()));
-        }
-
-        bc.getData().add(series);
-        return bc;
     }
 }

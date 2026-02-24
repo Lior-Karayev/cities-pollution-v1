@@ -32,12 +32,6 @@
                 </font>
             </Label>
 
-            <Button fx:id="btnLoadCsv" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLoadCsv" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-cursor: hand;" text="📄  Load CSV Data">
-                <padding>
-                    <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
-                </padding>
-            </Button>
-
             <Button fx:id="btnConnectSql" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleConnectSql" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-cursor: hand;" text="🛢  Connect MySQL">
                 <padding>
                     <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
@@ -63,12 +57,6 @@
             </Button>
 
             <Button fx:id="navTable" alignment="BASELINE_LEFT" disable="true" maxWidth="Infinity" onAction="#showTableView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand;" text="📋  All Reports">
-                <padding>
-                    <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
-                </padding>
-            </Button>
-
-            <Button fx:id="navRegional" alignment="BASELINE_LEFT" disable="true" maxWidth="Infinity" onAction="#showRegionalView" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand;" text="🌍  Regional Stats">
                 <padding>
                     <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
                 </padding>

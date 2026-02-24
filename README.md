@@ -1,65 +1,57 @@
-# Cities Pollution Analysis System
+# Cities Pollution Analytics Dashboard
 
-A Java-based Systems Programming project designed to analyze global air and water pollution data.
+A professional, JavaFX-based desktop application designed to analyze and visualize global air and water pollution data.
 
-This project implements a **hybrid data analysis architecture**, capable of processing data from two sources:
-1.  **CSV Analysis (Active):** Uses Java NIO and Streams to parse and aggregate data directly from raw files.
-2.  **Database Analysis (Ready):** A fully implemented DAO layer using JDBC and MySQL for advanced querying (prepared for future integration).
+This project evolved from a command-line parser into a robust **Model-View-Controller (MVC)** application. It features a responsive graphical user interface, dynamic SQL querying, and heavily utilizes modern Java multi-threading techniques to ensure smooth performance when handling large datasets.
 
-## 🚀 Features
+## 🚀 Key Features
 
-* **Data Parsing:** Efficiently reads and processes `data.csv` using `java.nio`.
-* **Aggregation Logic:** Algorithms to identify cities with **Maximum** and **Minimum** pollution levels for both Air and Water categories.
-* **Layered Architecture:** Follows a strict **MVC-based design** (Model, Data, Logic, View) to ensure separation of concerns.
-* **Scalability:** Includes a complete SQL data access layer (`MySQLPollutionDAO`) capable of complex `UNION` queries.
+* 📊 **Interactive Dashboard:** Visualizes the relationship between Air Quality and Water Pollution using JavaFX `ScatterChart`s. Includes dynamic views to group data by City, Region, or Country Average.
+* 🔍 **Smart Omni-Search:** A highly optimized search interface featuring a **300ms debounce timer**. It constructs dynamic SQL queries on the fly, allowing users to instantly filter by text (City, Country, Region) and numerical ranges without freezing the application.
+* ⚡ **Multi-threaded Performance:** * **Non-Blocking UI:** Uses `CompletableFuture` to run heavy database queries on background threads, safely merging results back to the JavaFX Application Thread via `Platform.runLater()`.
+    * **Parallel Processing:** Utilizes `parallelStream()` across multiple CPU cores to rapidly calculate regional and national pollution averages.
+* 🏗️ **Strict MVC Architecture:** A clean separation of concerns dividing the User Interface (View), Business Rules (Logic), Data Access Objects (Data), and Data Transfer Objects (Model).
 
 ## 📂 Project Structure
 
 The project is organized into strictly separated packages:
 
-### `app`
-* **`Main`**: The entry point. Currently configured to execute **CSV-based analysis** and print the results to the console.
-
-### `data` (Persistence Layer)
-* **`CsvDataReader`**: **(Core for Assignment 1)** Handles file I/O, parsing CSV lines, and calculating min/max pollution metrics using efficient loops and string splitting.
-* **`MySQLPollutionDAO`**: Implements `IPollutionDAO` using JDBC. Handles complex SQL queries and secure database connections.
-* **`DatabaseConnector`**: Manages DB credentials via a secure `config.properties` file.
-
-### `logic` (Service Layer)
-* **`PollutionManager`**: The bridge between the raw data and the application. It validates input and routes requests to either the CSV reader or the SQL DAO.
-
-### `model`
-* **`PollutionReportModel`**: An immutable Data Transfer Object (DTO) representing a single pollution record.
+* **`app`**: The application entry point (`Main.java`, `Launcher.java`).
+* **`view`**: The JavaFX Controllers (`MainController`, `DashboardController`, `AllReportsController`) handling UI events and thread-safe updates.
+* **`resources/view`**: The FXML layout files defining the visual structure.
+* **`logic`**: The Service Layer. Contains `PollutionManager` (routing) and `StatisticsAggregator` (parallel data processing).
+* **`data`**: The Persistence Layer. Contains `MySQLPollutionDAO` for secure, prepared SQL execution, and `DatabaseConnector`. *(Note: Includes `CsvDataReader` to fulfill raw File I/O processing requirements).*
+* **`model`**: Contains the `PollutionReportModel` and the `PollutionFilter` builder.
 
 ---
 
 ## 🛠️ Setup & Usage
 
 ### 1. Prerequisites
-* Java JDK 21
-* Maven
+* Java JDK 21+
+* JavaFX SDK (or configured via Maven/Gradle dependencies)
+* MySQL Server (Version 8.0+)
 
-### 2. Running the Analysis (CSV Mode)
-The application is currently set to **CSV Mode** by default.
+### 2. Database Setup (Required)
+The graphical interface relies on the MySQL database to function.
 
-1.  Ensure the file `data.csv` is present in the **root directory** of the project.
-2.  Run the `main` method in `app.Main`.
-3.  The application will output:
-    * Cities with Max/Min Water Pollution.
-    * Cities with Max/Min Air Pollution.
+1.  **Database Creation:** Execute your `database_setup.sql` script (or create a schema named `cities_pollution_db` and import your `data.csv` into a `cities_pollution` table). Ensure headers map correctly to `City`, `"Region"`, `"Country"`, `"AirQuality"`, and `"WaterPollution"`.
+2.  **Configuration:** Create a file named `config.properties` in the **root directory** of the project and add your MySQL credentials:
+    ```properties
+    db.url=jdbc:mysql://localhost:3306/cities_pollution_db
+    db.user=your_username
+    db.password=your_password
+    ```
 
-### 3. Advanced Setup (SQL Mode - Optional)
-The project contains a fully functional Database layer. To enable it:
-
-1.  **Database Creation:** Run the included `database_setup.sql` script to create the `cities_pollution_db` and the table schema (with quoted identifiers).
-2.  **Import Data:** Import `data.csv` into the `cities_pollution` table using your SQL IDE (ensure headers map to `City`, `"Region"`, `"Country"`, etc.).
-3.  **Configuration:** Rename `config.properties.example` to `config.properties` and add your MySQL credentials.
-4.  **Enable Code:** Uncomment the SQL methods in `app.Main`.
+### 3. Running the Application
+1.  Run the `main` method in `app.Launcher` (using a separate Launcher class prevents JavaFX module-path startup errors).
+2.  Click **"Connect MySQL"** on the sidebar to establish the connection and load the initial dashboard.
+3.  Navigate between the **Dashboard** (for visual analytics) and **All Reports** (for the searchable data table).
 
 ---
 
-## 🛡️ Design Choices
+## 🛡️ Design & Security Choices
 
-* **Exception Handling:** The CSV reader handles `FileNotFoundException` gracefully, logging errors without crashing the main thread.
-* **Security:** Database credentials are never hardcoded; they are loaded from an external file ignored by Git.
-* **Interface Segregation:** `IPollutionDAO` defines a contract, allowing the app to switch between data sources (Mock, SQL, File) easily.
+* **SQL Injection Prevention:** All dynamic queries in the `MySQLPollutionDAO` use `PreparedStatement` with object mapping to strictly sanitize user input.
+* **UI Debouncing:** Network and database spam are prevented by utilizing a JavaFX `PauseTransition` timer on the search inputs.
+* **Credential Security:** Database URLs, usernames, and passwords are loaded from an external `config.properties` file which should be added to `.gitignore`.

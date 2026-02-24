@@ -23,7 +23,7 @@
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <Label text="Visual Style:" textFill="#7f8c8d"/>
+        <Label text="Category:" textFill="#7f8c8d"/>
         <ComboBox fx:id="viewSelector" prefWidth="200.0" />
     </HBox>
 
